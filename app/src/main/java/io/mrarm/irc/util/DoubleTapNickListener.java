@@ -1,28 +1,16 @@
 package io.mrarm.irc.util;
 
-import android.content.res.Resources;
 import android.graphics.Rect;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import io.mrarm.irc.config.ChatSettings;
-import io.mrarm.irc.config.NickAutocompleteSettings;
-import io.mrarm.irc.config.SettingsHelper;
-
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class DoubleTapNickListener implements RecyclerView.OnItemTouchListener {
 
-    private boolean mSelectMode = false;
     private RecyclerView mRecyclerView;
-    private Listener mListener;
     private Rect mTempRect = new Rect();
-    private long mStartElementId = -1;
-    private long mEndElementId = -1;
-    private RecyclerViewScrollerRunnable mScroller;
 
     int clickCount = 0;
     long startTime;
@@ -31,52 +19,34 @@ public class DoubleTapNickListener implements RecyclerView.OnItemTouchListener {
 
     public DoubleTapNickListener(RecyclerView recyclerView) {
         mRecyclerView = recyclerView;
-        mScroller = new RecyclerViewScrollerRunnable(recyclerView, (int scrollDir) -> {
-            LinearLayoutManager llm = (LinearLayoutManager) mRecyclerView.getLayoutManager();
-            updateHighlightedElements(mRecyclerView, mRecyclerView.getAdapter().getItemId(
-                    scrollDir > 0
-                            ? llm.findLastCompletelyVisibleItemPosition()
-                            : llm.findFirstCompletelyVisibleItemPosition()));
-        });
     }
 
-    public void startSelectMode(long startPos) {
-        mSelectMode = true;
-        mStartElementId = startPos;
-        mEndElementId = -1;
-        mListener.onElementSelected(mRecyclerView, startPos);
-    }
 
-    public void setListener(Listener listener) {
-        mListener = listener;
-    }
+    public void dblTap (RecyclerView recyclerView, MotionEvent motionEvent)
+    {
+        int x = (int) motionEvent.getX();
+        int y = (int) motionEvent.getY();
 
-    public boolean isElementHighlighted(long id) {
-        return id == mStartElementId ||
-                (id >= mStartElementId && id <= mEndElementId) ||
-                (id <= mStartElementId && id >= mEndElementId && mEndElementId != -1);
-    }
+        x = Math.max(Math.min(x, mRecyclerView.getWidth()), 0);
+        y = Math.max(Math.min(y, mRecyclerView.getHeight()), 0);
 
-    private void updateHighlightedElements(RecyclerView recyclerView, long endId) {
-        if (mStartElementId == -1) {
-            mStartElementId = endId;
-            mListener.onElementHighlighted(recyclerView, mStartElementId, true);
-            return;
+        CharSequence textContent="";
+
+
+        for (int i = 0; i < recyclerView.getChildCount(); i++) {
+            View view = recyclerView.getChildAt(i);
+            view.getHitRect(mTempRect);
+            if (mTempRect.contains(x, y)) {
+                TextView tv = ((TextView ) view);
+                textContent = tv.getText();
+                break;
+            }
         }
-        for (long i = Math.max(mEndElementId, mStartElementId) + 1; i <= endId; i++)
-            mListener.onElementHighlighted(recyclerView, i, true);
-        for (long i = Math.min(mEndElementId == -1 ? mStartElementId : mEndElementId,
-                mStartElementId) - 1; i >= endId; i--)
-            mListener.onElementHighlighted(recyclerView, i, true);
+        if (textContent.length()>0) {
 
-        if (mEndElementId != -1) {
-            for (long i = Math.max(endId, mStartElementId) + 1; i <= mEndElementId; i++)
-                mListener.onElementHighlighted(recyclerView, i, false);
-            for (long i = Math.min(endId, mStartElementId) - 1; i >= mEndElementId; i--)
-                mListener.onElementHighlighted(recyclerView, i, false);
+            Toast.makeText(recyclerView.getContext(), textContent, Toast.LENGTH_SHORT).show();
+
         }
-
-        mEndElementId = endId;
     }
 
     @Override
@@ -95,7 +65,7 @@ public class DoubleTapNickListener implements RecyclerView.OnItemTouchListener {
                 {
                     if(duration<= MAX_DURATION)
                     {
-                        Toast.makeText(recyclerView.getContext(), "DblClick", Toast.LENGTH_SHORT).show();
+                        dblTap(recyclerView,motionEvent);
                     }
                     clickCount = 0;
                     duration = 0;
@@ -109,7 +79,6 @@ public class DoubleTapNickListener implements RecyclerView.OnItemTouchListener {
 
     @Override
     public void onTouchEvent(RecyclerView recyclerView, MotionEvent motionEvent) {
-        Toast.makeText(recyclerView.getContext(), "Touch", Toast.LENGTH_SHORT).show();
 
         onInterceptTouchEvent(recyclerView, motionEvent);
     }
@@ -118,13 +87,8 @@ public class DoubleTapNickListener implements RecyclerView.OnItemTouchListener {
     public void onRequestDisallowInterceptTouchEvent(boolean b) {
     }
 
-    public interface Listener {
-
-        void onElementSelected(RecyclerView recyclerView, long adapterPos);
-
-        void onElementHighlighted(RecyclerView recyclerView, long adapterId, boolean highlight);
-    }
-
-
-
 }
+
+
+
+

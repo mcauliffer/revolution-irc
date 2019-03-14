@@ -55,6 +55,7 @@ import io.mrarm.irc.ServerConnectionManager;
 import io.mrarm.irc.config.ChatSettings;
 import io.mrarm.irc.config.MessageFormatSettings;
 import io.mrarm.irc.config.UiSettingChangeCallback;
+import io.mrarm.irc.util.DoubleTapNickListener;
 import io.mrarm.irc.util.LongPressSelectTouchListener;
 import io.mrarm.irc.util.ScrollPosLinearLayoutManager;
 import io.mrarm.irc.config.SettingsHelper;
@@ -317,7 +318,13 @@ public class ChatMessagesFragment extends Fragment implements StatusMessageListe
             LongPressSelectTouchListener selectTouchListener =
                     new LongPressSelectTouchListener(mRecyclerView);
             mAdapter.setMultiSelectListener(selectTouchListener);
+
             mRecyclerView.addOnItemTouchListener(selectTouchListener);
+
+
+            DoubleTapNickListener doubleTapNickListener =
+                    new DoubleTapNickListener(mRecyclerView);
+            mRecyclerView.addOnItemTouchListener(doubleTapNickListener);
 
             if (!ChatSettings.shouldUseOnlyMultiSelectMode()) {
                 ChatSelectTouchListener newSelectTouchListener =

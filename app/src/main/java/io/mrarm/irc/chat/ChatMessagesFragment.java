@@ -322,8 +322,12 @@ public class ChatMessagesFragment extends Fragment implements StatusMessageListe
             mRecyclerView.addOnItemTouchListener(selectTouchListener);
 
 
+
+            ChatFragmentSendMessageHelper mChatFragmentSendMessageHelper = ((ChatFragment) getParentFragment()).getSendMessageHelper();
             DoubleTapNickListener doubleTapNickListener =
-                    new DoubleTapNickListener(mRecyclerView);
+                    new DoubleTapNickListener(mRecyclerView, mChatFragmentSendMessageHelper);
+
+
             mRecyclerView.addOnItemTouchListener(doubleTapNickListener);
 
             if (!ChatSettings.shouldUseOnlyMultiSelectMode()) {
